@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('barcode')->unique();
             $table->unsignedBigInteger('category_id');
             $table->decimal('price', 10, 2);
+            $table->integer('stock')->default(0);
             $table->timestamps();
     
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');

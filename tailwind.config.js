@@ -10,11 +10,11 @@ export default {
         './resources/**/*.vue',
     ],
     theme: {
-        extend: {
+        /*extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
-        },
+        },*/
     },
     plugins: [],
 };

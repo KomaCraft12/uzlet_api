@@ -8,6 +8,7 @@ use App\Models\StockEntry;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class ProductController extends Controller
 {
@@ -17,15 +18,15 @@ class ProductController extends Controller
 
         foreach ($products as $product) {
             $discount = Discount::select("*")->where('product_id', $product->id)
-            ->where('start_date', '<=', Carbon::now())
-            ->where('end_date', '>=', Carbon::now())
-            ->first();
+                ->where('start_date', '<=', Carbon::now())
+                ->where('end_date', '>=', Carbon::now())
+                ->first();
 
             $discounted_price = $discount ? $product->price - $product->price * ($discount->discount_amount / 100) : $product->price;
 
             $product->isdiscounted = !is_null($discount);
             $product->discounted = $discount ? [
-                'price' => round($discounted_price,2),
+                'price' => round($discounted_price, 2),
                 "amount" => $discount->discount_amount,
                 'start' => $discount->start_date,
                 'stop' => $discount->end_date
@@ -40,17 +41,18 @@ class ProductController extends Controller
         $product = Product::with('category')->findOrFail($id);
 
         // Lekérdezzük az aktív kedvezményeket
-        $discount = Discount::select("*")->where('product_id', $id)
-            ->where('start_date', '<=', Carbon::now())
-            ->where('end_date', '>=', Carbon::now())
+        $discount = Discount::select("*")->where('product_id', $product->id)
+            ->where('start_date', '<=', Carbon::now()->toDateString())
+            ->where('end_date', '>=', Carbon::now()->toDateString())
             ->first();
 
         $discounted_price = $discount ? $product->price - $product->price * ($discount->discount_amount / 100) : $product->price;
 
         $product->isdiscounted = !is_null($discount);
         $product->discounted = $discount ? [
-            'price' => round($discounted_price,2),
+            'price' => round($discounted_price, 2),
             "amount" => $discount->discount_amount,
+            "unit_price" => round($discounted_price / $product->quantity, 2),
             'start' => $discount->start_date,
             'stop' => $discount->end_date
         ] : [];
@@ -85,4 +87,39 @@ class ProductController extends Controller
 
         return response()->json($stockEntry, 201);
     }
+
+    public function getByBarcode($barcode)
+    {
+        $product = Product::with('category', 'stockEntries', 'discounts')->where('barcode', $barcode)->first();
+
+        // Lekérdezzük az aktív kedvezményeket
+        $discount = Discount::select("*")->where('product_id', $product->id)
+            ->where('start_date', '<=', Carbon::now()->toDateString())
+            ->where('end_date', '>=', Carbon::now()->toDateString())
+            ->first();
+
+        $discounted_price = $discount ? $product->price - $product->price * ($discount->discount_amount / 100) : $product->price;
+
+        $product->isdiscounted = !is_null($discount);
+        $product->discounted = $discount ? [
+            'price' => round($discounted_price, 2),
+            "amount" => $discount->discount_amount,
+            "unit_price" => round($discounted_price / $product->quantity, 2),
+            'start' => $discount->start_date,
+            'stop' => $discount->end_date
+        ] : [];
+
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        // barokkód generálása
+        $generator = new BarcodeGeneratorPNG();
+        $barcode = $generator->getBarcode($product->barcode, BarcodeGeneratorPNG::TYPE_EAN_13);
+
+        $product->barcodeImage = "data:image/png;base64," . base64_encode($barcode);
+
+        return response()->json($product);
+    }
+
 }

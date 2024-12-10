@@ -1,0 +1,65 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 10;
+    padding: 0;
+  }
+
+  /* Nyomtatásra optimalizált stílusok */
+  .label {
+    width: 400px;
+    /*background-color: #FFCC00;*/
+    background-color: white;
+    border: 1px solid #000;
+  }
+
+  table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    padding: 0;
+  }
+
+  td {
+    padding: 5px;
+    vertical-align: top;
+  }
+
+  .large-price {
+    font-size: 36px;
+    font-weight: bold;
+    color: #000;
+  }
+
+  .small-price {
+    font-size: 14px;
+    color: #000;
+  }
+
+  .product-name {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .product-description {
+    font-size: 12px;
+    color: #000;
+  }
+
+  .barcode {
+    text-align: center;
+  }
+
+  .barcode img {
+    width: 100%;
+    height: auto;
+  }
+
+  .rotate {
+    rotate: -90deg;
+    -webkit-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+    position: absolute;
+    top: 40%;
+    left: -24%;
+    transform: translate(-50%, -50%);
+  }
